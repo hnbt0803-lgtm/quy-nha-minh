@@ -1,1 +1,236 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"; import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"; import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"; const firebaseConfig = { apiKey: "AIzaSyBViKncnXmnUQchbWPRmJTHM6te9Db-5Ns", authDomain: "quynhomgiadinh.firebaseapp.com", projectId: "quynhomgiadinh", storageBucket: "quynhomgiadinh.firebasestorage.app", messagingSenderId: "96949533862", appId: "1:96949533862:web:bba911da7c4a0b8774c867" }; const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quỹ Nhà Mình 💜</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f9f5ff;color:#40334d;font-family:Arial,sans-serif}
+header{background:#b79be8;color:white;padding:24px;text-align:center}
+h1{margin:0 0 8px}
+main{max-width:650px;margin:auto;padding:16px}
+.card{background:white;padding:18px;margin:14px 0;border-radius:18px;box-shadow:0 3px 12px #ddd2ed}
+input,select,button{width:100%;padding:13px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
+button{background:#a782dc;color:white;border:0;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.secondary{background:#eee6fa;color:#65469c}
+.hidden{display:none}
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary div{background:#f1e9ff;padding:14px;border-radius:12px}
+.summary strong{display:block;margin-top:8px;font-size:18px}
+small{color:#776b83}
+.item{padding:12px 0;border-bottom:1px solid #eee}
+.item:last-child{border:0}
+.item strong{float:right}
+.income{color:#16805b}
+.expense{color:#b54b72}
+#error{color:#b3261e}
+</style>
+</head>
+<body>
+<header>
+<h1>🏡 Quỹ Nhà Mình</h1>
+<div>Cùng nhau quản lý chi tiêu 💜</div>
+</header>
+<main>
+<section id="loginBox" class="card">
+<h2>Đăng nhập gia đình</h2>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Mật khẩu">
+<button id="loginBtn">Đăng nhập</button>
+<button id="registerBtn" class="secondary">Đăng ký</button>
+<p id="error"></p>
+</section>
+
+<section id="appBox" class="hidden">
+<div class="card">
+<div id="userInfo"></div>
+<button id="logoutBtn" class="secondary">Đăng xuất</button>
+</div>
+
+<div class="card">
+<h2>📊 Tổng quan tháng</h2>
+<input id="month" type="month">
+<div class="summary">
+<div>Thu nhập<strong id="totalIncome">0đ</strong></div>
+<div>Chi tiêu<strong id="totalExpense">0đ</strong></div>
+<div>Ngân sách<strong>5.000.000đ</strong></div>
+<div>Còn lại ngân sách<strong id="remaining">0đ</strong></div>
+</div>
+<p><small>Số dư quỹ = tổng thu trừ tổng chi.</small></p>
+<h3 id="balance">Số dư quỹ: 0đ</h3>
+</div>
+
+<div class="card">
+<h2>✍️ Thêm giao dịch</h2>
+<form id="transactionForm">
+<select id="type">
+<option value="expense">Chi tiêu</option>
+<option value="income">Thu nhập</option>
+</select>
+<input id="amount" type="number" min="1" step="1" placeholder="Số tiền (VNĐ)" required>
+<select id="category">
+<option>Đi chợ</option>
+<option>Ăn uống</option>
+<option>Tiền nhà</option>
+<option>Điện nước</option>
+<option>Đi lại</option>
+<option>Đóng góp quỹ</option>
+<option>Khác</option>
+</select>
+<input id="note" placeholder="Ghi chú">
+<input id="date" type="date" required>
+<button id="saveBtn" type="submit">Lưu giao dịch</button>
+</form>
+</div>
+
+<div class="card">
+<h2>📒 Lịch sử giao dịch</h2>
+<div id="transactions">Đang tải...</div>
+</div>
+</section>
+</main>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+getAuth,onAuthStateChanged,
+signInWithEmailAndPassword,
+createUserWithEmailAndPassword,signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+getFirestore,collection,addDoc,onSnapshot,
+serverTimestamp,query,where
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyBViKncnXmnUQchbWPRmJTHM6te9Db-5Ns",
+authDomain:"quynhomgiadinh.firebaseapp.com",
+projectId:"quynhomgiadinh",
+storageBucket:"quynhomgiadinh.firebasestorage.app",
+messagingSenderId:"96949533862",
+appId:"1:96949533862:web:bba911da7c4a0b8774c867"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const money=n=>Number(n).toLocaleString("vi-VN")+"đ";
+const familyId="quy-nha-minh";
+let unsubscribe=null;
+let records=[];
+
+const today=new Date();
+const localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$("date").value=localDate;
+$("month").value=localDate.slice(0,7);
+
+function showError(e){
+const messages={
+"auth/invalid-credential":"Email hoặc mật khẩu không đúng.",
+"auth/email-already-in-use":"Email đã được đăng ký.",
+"auth/weak-password":"Mật khẩu cần ít nhất 6 ký tự.",
+"auth/operation-not-allowed":"Cần bật Email/Password trong Firebase Authentication.",
+"permission-denied":"Chưa có quyền truy cập dữ liệu. Hãy kiểm tra Firestore Rules."
+};
+$("error").textContent=messages[e.code]||e.message||"Có lỗi xảy ra.";
+alert($("error").textContent);
+}
+
+$("loginBtn").onclick=async()=>{
+try{
+$("error").textContent="";
+await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+}catch(e){showError(e)}
+};
+
+$("registerBtn").onclick=async()=>{
+try{
+$("error").textContent="";
+await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+}catch(e){showError(e)}
+};
+
+$("logoutBtn").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+if(unsubscribe){unsubscribe();unsubscribe=null}
+$("loginBox").classList.toggle("hidden",!!user);
+$("appBox").classList.toggle("hidden",!user);
+if(!user)return;
+$("userInfo").textContent="Đã đăng nhập: "+user.email;
+const q=query(collection(db,"families",familyId,"transactions"),where("familyId","==",familyId));
+unsubscribe=onSnapshot(q,snapshot=>{
+records=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+render();
+},showError);
+});
+
+$("transactionForm").onsubmit=async e=>{
+e.preventDefault();
+const user=auth.currentUser;
+if(!user)return;
+const amount=Number($("amount").value);
+if(!Number.isSafeInteger(amount)||amount<=0){
+alert("Vui lòng nhập số tiền hợp lệ.");return;
+}
+$("saveBtn").disabled=true;
+try{
+await addDoc(collection(db,"families",familyId,"transactions"),{
+familyId,
+type:$("type").value,
+amount,
+category:$("category").value,
+note:$("note").value.trim().slice(0,200),
+date:$("date").value,
+createdBy:user.uid,
+createdByEmail:user.email,
+createdAt:serverTimestamp()
+});
+$("amount").value="";
+$("note").value="";
+}catch(err){showError(err)}
+finally{$("saveBtn").disabled=false}
+};
+
+$("month").onchange=render;
+
+function render(){
+const month=$("month").value;
+const data=records.filter(x=>x.date?.startsWith(month));
+const income=data.filter(x=>x.type==="income").reduce((s,x)=>s+x.amount,0);
+const expense=data.filter(x=>x.type==="expense").reduce((s,x)=>s+x.amount,0);
+$("totalIncome").textContent=money(income);
+$("totalExpense").textContent=money(expense);
+$("remaining").textContent=money(5000000-expense);
+$("balance").textContent="Số dư quỹ: "+money(income-expense);
+const box=$("transactions");
+box.replaceChildren();
+if(!data.length){
+box.textContent="Chưa có giao dịch trong tháng này.";
+return;
+}
+data.sort((a,b)=>b.date.localeCompare(a.date));
+for(const x of data){
+const item=document.createElement("div");
+item.className="item";
+const amount=document.createElement("strong");
+amount.className=x.type==="income"?"income":"expense";
+amount.textContent=(x.type==="income"?"+":"-")+money(x.amount);
+const label=document.createElement("div");
+label.textContent=x.category+" • "+x.date;
+const note=document.createElement("small");
+note.textContent=(x.note||"")+" • "+(x.createdByEmail||"");
+item.append(amount,label,note);
+box.append(item);
+}
+}
+</script>
+</body>
+</html>
+
