@@ -3,109 +3,134 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quỹ Nhà Mình 💜</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f9f5ff;color:#40334d;font-family:Arial,sans-serif}
-header{background:#b79be8;color:white;padding:24px;text-align:center}
-h1{margin:0 0 8px}
-main{max-width:650px;margin:auto;padding:16px}
-.card{background:white;padding:18px;margin:14px 0;border-radius:18px;box-shadow:0 3px 12px #ddd2ed}
-input,select,button{width:100%;padding:13px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
-button{background:#a782dc;color:white;border:0;font-weight:bold;cursor:pointer}
+body{margin:0;font-family:Arial,sans-serif;background:#f8f3ff;color:#49365e}
+header{background:#b79be4;color:white;text-align:center;padding:30px 12px}
+h1{margin:0 0 12px}
+main{max-width:650px;margin:auto;padding:14px}
+.card{background:white;border-radius:20px;padding:20px;margin:15px 0;box-shadow:0 3px 14px #e7def1}
+h2{font-size:22px}
+input,select,button{width:100%;padding:13px;margin:7px 0;border:1px solid #ddd0eb;border-radius:12px;font-size:16px}
+button{background:#a783d9;color:white;border:0;font-weight:bold}
 button:disabled{opacity:.5}
-.secondary{background:#eee6fa;color:#65469c}
+.secondary{background:#eee4fa;color:#62469a}
+.danger{background:#fbe6ec;color:#a22e50}
 .hidden{display:none}
-.row{display:flex;gap:8px}
-.row>*{flex:1;min-width:0}
-.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.summary div{background:#f1e9ff;padding:14px;border-radius:12px}
-.summary strong{display:block;margin-top:8px;font-size:18px}
-small{color:#776b83}
-.item{padding:12px 0;border-bottom:1px solid #eee}
-.item:last-child{border:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#efe5fc;padding:15px;border-radius:15px}
+.tile strong{display:block;margin-top:10px;font-size:19px;overflow-wrap:anywhere}
+.item{padding:13px 0;border-bottom:1px solid #eee}
 .item strong{float:right}
+.meta{font-size:13px;color:#81738b;margin:7px 0}
+.actions{display:flex;gap:8px}
+.actions button{width:50%}
 .income{color:#16805b}
-.expense{color:#b54b72}
-#error{color:#b3261e}
+.expense{color:#b34b72}
+.bar{height:12px;background:#eee4fa;border-radius:20px;overflow:hidden}
+.fill{height:100%;background:#a783d9}
+.chartrow{display:flex;justify-content:space-between;gap:10px;margin:12px 0 5px}
+.small{font-size:13px;color:#81738b}
+dialog{border:0;border-radius:20px;padding:20px;width:90%;max-width:450px}
+dialog::backdrop{background:#2228}
 </style>
 </head>
 <body>
 <header>
 <h1>🏡 Quỹ Nhà Mình</h1>
-<div>Cùng nhau quản lý chi tiêu 💜</div>
+<p>Cùng nhau quản lý chi tiêu 💜</p>
 </header>
 <main>
+
 <section id="loginBox" class="card">
 <h2>Đăng nhập gia đình</h2>
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Mật khẩu">
 <button id="loginBtn">Đăng nhập</button>
-<button id="registerBtn" class="secondary">Đăng ký</button>
 <p id="error"></p>
 </section>
 
 <section id="appBox" class="hidden">
 <div class="card">
-<div id="userInfo"></div>
+<p id="userInfo"></p>
 <button id="logoutBtn" class="secondary">Đăng xuất</button>
 </div>
 
 <div class="card">
 <h2>📊 Tổng quan tháng</h2>
 <input id="month" type="month">
-<div class="summary">
-<div>Thu nhập<strong id="totalIncome">0đ</strong></div>
-<div>Chi tiêu<strong id="totalExpense">0đ</strong></div>
-<div>Ngân sách<strong>5.000.010đ</strong></div>
-<div>Còn lại ngân sách<strong id="remaining">0đ</strong></div>
+<div class="grid">
+<div class="tile">Thu nhập<strong id="income">0đ</strong></div>
+<div class="tile">Chi tiêu<strong id="expense">0đ</strong></div>
+<div class="tile">Ngân sách<strong id="budget">0đ</strong></div>
+<div class="tile">Còn lại<strong id="remaining">0đ</strong></div>
 </div>
-<p><small>Số dư quỹ = tổng thu trừ tổng chi.</small></p>
 <h3 id="balance">Số dư quỹ: 0đ</h3>
+<div class="bar"><div class="fill" id="progress"></div></div>
+<p id="percent" class="small"></p>
+<h3>💰 Điều chỉnh ngân sách</h3>
+<input id="budgetInput" type="number" min="0" placeholder="Nhập ngân sách tháng">
+<button id="saveBudget">Lưu ngân sách</button>
 </div>
 
 <div class="card">
 <h2>✍️ Thêm giao dịch</h2>
-<form id="transactionForm">
+<form id="form">
 <select id="type">
 <option value="expense">Chi tiêu</option>
 <option value="income">Thu nhập</option>
 </select>
-<input id="amount" type="number" min="1" step="1" placeholder="Số tiền (VNĐ)" required>
-<select id="category">
-<option>Đi chợ</option>
-<option>Ăn uống</option>
-<option>Tiền nhà</option>
-<option>Điện nước</option>
-<option>Đi lại</option>
-<option>Đóng góp quỹ</option>
-<option>Khác</option>
-</select>
+<input id="amount" type="number" min="1" placeholder="Số tiền VNĐ" required>
+<select id="category"></select>
 <input id="note" placeholder="Ghi chú">
 <input id="date" type="date" required>
-<button id="saveBtn" type="submit">Lưu giao dịch</button>
+<button type="submit" id="saveBtn">Lưu giao dịch</button>
 </form>
+</div>
+
+<div class="card">
+<h2>📈 Thống kê chi tiêu</h2>
+<div id="chart"></div>
 </div>
 
 <div class="card">
 <h2>📒 Lịch sử giao dịch</h2>
 <div id="transactions">Đang tải...</div>
 </div>
+
+<div class="card hidden" id="ownerBox">
+<h2>👨‍👩‍👧 Thành viên gia đình</h2>
+<p class="small">Tối đa 3 thành viên. Chưa cần thêm ngay.</p>
+<input id="memberUid" placeholder="UID tài khoản Firebase">
+<input id="memberName" placeholder="Tên thành viên">
+<button id="addMember">Thêm thành viên</button>
+<div id="memberList"></div>
+</div>
 </section>
 </main>
 
+<dialog id="editDialog">
+<h2>✏️ Sửa giao dịch</h2>
+<form id="editForm">
+<select id="editType">
+<option value="expense">Chi tiêu</option>
+<option value="income">Thu nhập</option>
+</select>
+<input id="editAmount" type="number" min="1" required>
+<select id="editCategory"></select>
+<input id="editNote" placeholder="Ghi chú">
+<input id="editDate" type="date" required>
+<button type="submit">Lưu thay đổi</button>
+<button type="button" id="cancelEdit" class="secondary">Hủy</button>
+</form>
+</dialog>
+
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {
-getAuth,onAuthStateChanged,
-signInWithEmailAndPassword,
-createUserWithEmailAndPassword,signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import {
-getFirestore,collection,addDoc,onSnapshot,
-serverTimestamp,query,where
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyBViKncnXmnUQchbWPRmJTHM6te9Db-5Ns",
@@ -116,121 +141,320 @@ messagingSenderId:"96949533862",
 appId:"1:96949533862:web:bba911da7c4a0b8774c867"
 };
 
+const OWNER="Yb8EBjGeh9dd0Zi5mePLOY9M2B02";
+const familyId="quy-nha-minh";
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const $=id=>document.getElementById(id);
-const money=n=>Number(n).toLocaleString("vi-VN")+"đ";
-const familyId="quy-nha-minh";
-let unsubscribe=null;
-let records=[];
+const money=n=>Number(n||0).toLocaleString("vi-VN")+"đ";
+
+const tx=collection(db,"families",familyId,"transactions");
+const budgets=collection(db,"families",familyId,"budgets");
+const members=collection(db,"families",familyId,"members");
+
+const categories=[
+"Đi chợ","Ăn uống","Tiền nhà","Điện nước",
+"Đi lại","Đồ dùng gia đình","Thú cưng",
+"Y tế","Học tập","Đóng góp quỹ","Lương","Khác"
+];
+
+for(const id of ["category","editCategory"]){
+for(const name of categories){
+const o=document.createElement("option");
+o.value=o.textContent=name;
+$(id).append(o);
+}
+}
 
 const today=new Date();
-const localDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
-$("date").value=localDate;
-$("month").value=localDate.slice(0,7);
+const local=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$("date").value=local;
+$("month").value=local.slice(0,7);
 
-function showError(e){
-const messages={
-"auth/invalid-credential":"Email hoặc mật khẩu không đúng.",
-"auth/email-already-in-use":"Email đã được đăng ký.",
-"auth/weak-password":"Mật khẩu cần ít nhất 6 ký tự.",
-"auth/operation-not-allowed":"Cần bật Email/Password trong Firebase Authentication.",
-"permission-denied":"Chưa có quyền truy cập dữ liệu. Hãy kiểm tra Firestore Rules."
-};
-$("error").textContent=messages[e.code]||e.message||"Có lỗi xảy ra.";
-alert($("error").textContent);
+let records=[];
+let budgetMap={};
+let memberMap={};
+let unsubs=[];
+let editingId=null;
+let loaded=false;
+
+function fail(e){
+console.error(e);
+alert(e.code==="permission-denied"?
+"Chưa có quyền Firebase. Kiểm tra Rules.":
+e.message||"Có lỗi xảy ra.");
 }
 
 $("loginBtn").onclick=async()=>{
 try{
-$("error").textContent="";
 await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-}catch(e){showError(e)}
-};
-
-$("registerBtn").onclick=async()=>{
-try{
-$("error").textContent="";
-await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-}catch(e){showError(e)}
+}catch(e){fail(e)}
 };
 
 $("logoutBtn").onclick=()=>signOut(auth);
 
 onAuthStateChanged(auth,user=>{
-if(unsubscribe){unsubscribe();unsubscribe=null}
+unsubs.forEach(f=>f());
+unsubs=[];
+records=[];
+budgetMap={};
+memberMap={};
+loaded=false;
+
 $("loginBox").classList.toggle("hidden",!!user);
 $("appBox").classList.toggle("hidden",!user);
 if(!user)return;
+
 $("userInfo").textContent="Đã đăng nhập: "+user.email;
-const q=query(collection(db,"families",familyId,"transactions"),where("familyId","==",familyId));
-unsubscribe=onSnapshot(q,snapshot=>{
-records=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+$("ownerBox").classList.toggle("hidden",user.uid!==OWNER);
+
+unsubs.push(onSnapshot(
+query(tx,where("familyId","==",familyId)),
+snap=>{
+records=snap.docs.map(d=>({id:d.id,...d.data()}));
+loaded=true;
 render();
-},showError);
+},fail));
+
+unsubs.push(onSnapshot(budgets,snap=>{
+budgetMap=Object.fromEntries(snap.docs.map(d=>[d.id,d.data().amount]));
+render();
+},fail));
+
+if(user.uid===OWNER){
+unsubs.push(onSnapshot(members,snap=>{
+memberMap=Object.fromEntries(snap.docs.map(d=>[d.id,d.data()]));
+renderMembers();
+},fail));
+}
 });
 
-$("transactionForm").onsubmit=async e=>{
+$("month").onchange=render;
+
+$("saveBudget").onclick=async()=>{
+const amount=Number($("budgetInput").value);
+if(!Number.isSafeInteger(amount)||amount<0){
+alert("Ngân sách không hợp lệ.");return;
+}
+try{
+await setDoc(doc(budgets,$("month").value),{
+amount,
+updatedBy:auth.currentUser.uid,
+updatedAt:serverTimestamp()
+});
+alert("Đã lưu ngân sách.");
+}catch(e){fail(e)}
+};
+
+$("form").onsubmit=async e=>{
 e.preventDefault();
-const user=auth.currentUser;
-if(!user)return;
 const amount=Number($("amount").value);
 if(!Number.isSafeInteger(amount)||amount<=0){
-alert("Vui lòng nhập số tiền hợp lệ.");return;
+alert("Số tiền không hợp lệ.");return;
 }
 $("saveBtn").disabled=true;
 try{
-await addDoc(collection(db,"families",familyId,"transactions"),{
+await addDoc(tx,{
 familyId,
 type:$("type").value,
 amount,
 category:$("category").value,
-note:$("note").value.trim().slice(0,200),
+note:$("note").value.trim(),
 date:$("date").value,
-createdBy:user.uid,
-createdByEmail:user.email,
+createdBy:auth.currentUser.uid,
+createdByEmail:auth.currentUser.email,
 createdAt:serverTimestamp()
 });
 $("amount").value="";
 $("note").value="";
-}catch(err){showError(err)}
+}catch(e){fail(e)}
 finally{$("saveBtn").disabled=false}
 };
 
-$("month").onchange=render;
+$("cancelEdit").onclick=()=>$("editDialog").close();
+
+$("editForm").onsubmit=async e=>{
+e.preventDefault();
+if(!editingId)return;
+const amount=Number($("editAmount").value);
+if(!Number.isSafeInteger(amount)||amount<=0)return;
+try{
+await updateDoc(doc(tx,editingId),{
+type:$("editType").value,
+amount,
+category:$("editCategory").value,
+note:$("editNote").value.trim(),
+date:$("editDate").value,
+updatedBy:auth.currentUser.uid,
+updatedAt:serverTimestamp()
+});
+$("editDialog").close();
+}catch(e){fail(e)}
+};
 
 function render(){
+if($("appBox").classList.contains("hidden"))return;
+
 const month=$("month").value;
 const data=records.filter(x=>x.date?.startsWith(month));
-const income=data.filter(x=>x.type==="income").reduce((s,x)=>s+x.amount,0);
-const expense=data.filter(x=>x.type==="expense").reduce((s,x)=>s+x.amount,0);
-$("totalIncome").textContent=money(income);
-$("totalExpense").textContent=money(expense);
-$("remaining").textContent=money(5000000-expense);
+const income=data.filter(x=>x.type==="income").reduce((s,x)=>s+Number(x.amount||0),0);
+const expense=data.filter(x=>x.type==="expense").reduce((s,x)=>s+Number(x.amount||0),0);
+const budget=Number(budgetMap[month]??5000000);
+
+$("income").textContent=money(income);
+$("expense").textContent=money(expense);
+$("budget").textContent=money(budget);
+$("remaining").textContent=money(budget-expense);
 $("balance").textContent="Số dư quỹ: "+money(income-expense);
-const box=$("transactions");
-box.replaceChildren();
-if(!data.length){
-box.textContent="Chưa có giao dịch trong tháng này.";
-return;
-}
-data.sort((a,b)=>b.date.localeCompare(a.date));
-for(const x of data){
+$("budgetInput").value=budget;
+
+const pct=budget>0?expense/budget*100:0;
+$("progress").style.width=Math.min(100,Math.max(0,pct))+"%";
+$("percent").textContent="Đã dùng "+pct.toFixed(1)+"% ngân sách";
+
+const list=$("transactions");
+list.replaceChildren();
+
+if(!loaded){
+list.textContent="Đang tải...";
+}else if(!data.length){
+list.textContent="Chưa có giao dịch.";
+}else{
+for(const x of [...data].sort((a,b)=>(b.date||"").localeCompare(a.date||""))){
 const item=document.createElement("div");
 item.className="item";
+
+const head=document.createElement("div");
+const label=document.createElement("span");
+label.textContent=(x.category||"Khác")+" • "+x.date;
 const amount=document.createElement("strong");
 amount.className=x.type==="income"?"income":"expense";
 amount.textContent=(x.type==="income"?"+":"-")+money(x.amount);
-const label=document.createElement("div");
-label.textContent=x.category+" • "+x.date;
-const note=document.createElement("small");
-note.textContent=(x.note||"")+" • "+(x.createdByEmail||"");
-item.append(amount,label,note);
-box.append(item);
+head.append(label,amount);
+
+const meta=document.createElement("div");
+meta.className="meta";
+meta.textContent=[x.note,x.createdByEmail].filter(Boolean).join(" • ");
+
+const actions=document.createElement("div");
+actions.className="actions";
+
+const edit=document.createElement("button");
+edit.className="secondary";
+edit.textContent="Sửa";
+edit.onclick=()=>{
+editingId=x.id;
+$("editType").value=x.type;
+$("editAmount").value=x.amount;
+if(!categories.includes(x.category)){
+const opt=document.createElement("option");
+opt.value=opt.textContent=x.category||"Khác";
+$("editCategory").append(opt);
+}
+$("editCategory").value=x.category||"Khác";
+$("editNote").value=x.note||"";
+$("editDate").value=x.date;
+$("editDialog").showModal();
+};
+
+const del=document.createElement("button");
+del.className="danger";
+del.textContent="Xóa";
+del.onclick=async()=>{
+if(!confirm("Xóa giao dịch "+money(x.amount)+"?"))return;
+try{await deleteDoc(doc(tx,x.id))}
+catch(e){fail(e)}
+};
+
+actions.append(edit,del);
+item.append(head,meta,actions);
+list.append(item);
 }
 }
+
+const groups={};
+for(const x of data.filter(x=>x.type==="expense")){
+const name=x.category||"Khác";
+groups[name]=(groups[name]||0)+Number(x.amount||0);
+}
+const chart=$("chart");
+chart.replaceChildren();
+
+if(!expense){
+chart.textContent="Chưa có khoản chi trong tháng.";
+}else{
+const colors=["#a783d9","#c3a4ec","#7654a8","#e6b5da","#9b89c9"];
+Object.entries(groups).sort((a,b)=>b[1]-a[1]).forEach(([name,value],i)=>{
+const row=document.createElement("div");
+row.className="chartrow";
+const left=document.createElement("span");
+left.textContent=name;
+const right=document.createElement("strong");
+right.textContent=money(value)+" ("+Math.round(value/expense*100)+"%)";
+row.append(left,right);
+
+const bar=document.createElement("div");
+bar.className="bar";
+const fill=document.createElement("div");
+fill.className="fill";
+fill.style.background=colors[i%colors.length];
+fill.style.width=value/expense*100+"%";
+bar.append(fill);
+chart.append(row,bar);
+});
+}
+}
+
+function renderMembers(){
+const box=$("memberList");
+box.replaceChildren();
+const count=1+Object.keys(memberMap).filter(id=>id!==OWNER).length;
+const p=document.createElement("p");
+p.textContent="Thành viên: "+count+"/3";
+box.append(p);
+for(const [uid,info] of Object.entries(memberMap)){
+const row=document.createElement("div");
+row.className="item";
+const name=document.createElement("p");
+name.textContent=(info.name||"Thành viên")+" • "+uid;
+row.append(name);
+if(uid!==OWNER){
+const btn=document.createElement("button");
+btn.className="danger";
+btn.textContent="Thu hồi quyền";
+btn.onclick=async()=>{
+if(confirm("Thu hồi quyền thành viên?")){
+try{await deleteDoc(doc(members,uid))}
+catch(e){fail(e)}
+}
+};
+row.append(btn);
+}
+box.append(row);
+}
+}
+
+$("addMember").onclick=async()=>{
+const uid=$("memberUid").value.trim();
+if(!/^[A-Za-z0-9]{10,128}$/.test(uid)){
+alert("UID không hợp lệ.");return;
+}
+if(uid!==OWNER&&!memberMap[uid]&&
+Object.keys(memberMap).filter(id=>id!==OWNER).length>=2){
+alert("Tối đa 3 thành viên.");return;
+}
+try{
+await setDoc(doc(members,uid),{
+name:$("memberName").value.trim()||"Thành viên",
+addedAt:serverTimestamp(),
+addedBy:auth.currentUser.uid
+});
+$("memberUid").value="";
+$("memberName").value="";
+alert("Đã cấp quyền thành viên.");
+}catch(e){fail(e)}
+};
 </script>
 </body>
 </html>
-
